@@ -59,19 +59,23 @@ def get_data(host, port, mount):
               '\r\n' % (mount, host, port))
     data = s.recv(1024).decode('utf-8', 'ignore').encode('utf-8')
     s.close()
-    return dict([d.split(':',1) for d in  data.split('\r\n') if d.count("icy")])
+    pdata = dict([d.split(':',1) for d in  data.split('\r\n') if d.count("icy")])
+    if pdata.has_key("icy-br"):
+        return  json.dumps(pdata)
 
 
+
+
+jdata = get_data(host, port, mount)
 #skip empty crap
-pdata = get_data(host, port, mount)
-if pdata.has_key("icy-br"):
-    jdata = json.dumps(pdata)
+if jdata:
     print jdata
-    try:
-        # this post is optional
-        req = urllib2.Request(posturl, data=jdata, headers={'Content-Type': 'application/json',
-                                                            'Referer': 'http://%s' % (host)})
-        r = urllib2.urlopen(req)
-    except NameError:
-        pass
+
+try:
+    # this post is optional
+    req = urllib2.Request(posturl, data=jdata, headers={'Content-Type': 'application/json',
+                                                        'Referer': 'http://%s' % (host)})
+    r = urllib2.urlopen(req)
+except NameError:
+    pass
 
