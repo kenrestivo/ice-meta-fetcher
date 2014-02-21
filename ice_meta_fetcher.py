@@ -13,8 +13,8 @@ import sys
 def usage ():
     print """usage:
     -h host to get metadata from
-    -p port to get metadata from
     -m mount to get metadata from
+    [-p port to get metadata from (default 8000)]
     [-u url to post metadata to as json]"""
 
 try:
@@ -24,6 +24,10 @@ except getopt.GetoptError:
     usage()
     sys.exit(1)
 
+# defaults
+port = 8000
+
+# check options
 for opt in optlist:
     if opt[0] == '-h':
         host=opt[1]
@@ -34,6 +38,7 @@ for opt in optlist:
     if opt[0] == '-u':
         posturl=opt[1]
 
+# required options
 try:
     host
     port
