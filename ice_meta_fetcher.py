@@ -14,11 +14,12 @@ def usage ():
     print("""usage:
     -h host to get metadata from
     -m mount to get metadata from
+    [-f to get full header metadata]
     [-p port to get metadata from (default 8000)]
     [-u url to post metadata to as json]""")
 
 try:
-    optlist, cmdline = getopt.getopt(sys.argv[1:],'h:p:m:u:')
+    optlist, cmdline = getopt.getopt(sys.argv[1:],'h:p:m:u:f')
 except getopt.GetoptError:
     sys.stderr.write("invalid options\n")
     usage()
@@ -28,6 +29,7 @@ except getopt.GetoptError:
 port = 8000
 
 # check options
+full_headers = False
 for opt in optlist:
     if opt[0] == '-h':
         host=opt[1]
@@ -37,6 +39,8 @@ for opt in optlist:
         mount=opt[1]
     if opt[0] == '-u':
         posturl=opt[1]
+    if opt[0] == '-f':
+        full_headers = True
 
 # required options
 try:
@@ -56,9 +60,12 @@ def get_data(host, port, mount):
     s.sendall(req)
     data = s.recv(1024).decode('utf-8', 'ignore')
     s.close()
-    pdata = dict([d.split(':',1) for d in data.split('\r\n') if d.count("icy")])
-    if pdata.__contains__("icy-br"):
-        return  json.dumps(pdata)
+    pdata = dict()
+    if full_headers:
+        pdata = dict([d.split(':',1) for d in data.split('\r\n') if d.count(":")])
+    else:
+        pdata = dict([d.split(':',1) for d in data.split('\r\n') if d.count("icy")])
+    return  json.dumps(pdata)
 
 jdata = get_data(host, port, mount)
 #skip empty crap
